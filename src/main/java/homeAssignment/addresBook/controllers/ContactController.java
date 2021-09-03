@@ -22,10 +22,11 @@ import homeAssignment.addresBook.services.ContactService;
 @RestController
 public class ContactController {
 
-	// GET
+	
 	@Autowired
 	private ContactService contactService;
-
+	
+	// GET
 	@GetMapping("/contacts")
 	public @ResponseBody List<Contact> contacts() {
 
@@ -72,9 +73,13 @@ public class ContactController {
 	@PutMapping("/contacts/update/{id}")
 	Contact updateContact(@PathVariable("id") Long id, @Valid @RequestBody Contact updatedContact) throws Exception {
 
+
+		if (id == null) {
+			throw new InvalidRequestException("ID must not be null!");
+		}
+		
 		Contact existingContact = contactService.getContact(id);
 
-		existingContact.setId(id);
 		existingContact.setName(updatedContact.getName());
 		existingContact.setPhoneNumber(updatedContact.getPhoneNumber());
 		return contactService.save(existingContact);
