@@ -53,10 +53,6 @@ public class ContactController {
 	@PostMapping("/contacts/create")
 	public Contact createContact(@Valid @RequestBody Contact contact) {
 
-		if (contact == null) {
-			throw new InvalidRequestException("contact must not be null!");
-		}
-
 		return contactService.save(contact);
 
 	}
@@ -75,10 +71,6 @@ public class ContactController {
 	// PUT
 	@PutMapping("/contacts/update/{id}")
 	Contact updateContact(@PathVariable("id") Long id, @Valid @RequestBody Contact updatedContact) throws Exception {
-
-		if (id == null || updatedContact == null) {
-			throw new InvalidRequestException("contact or ID must not be null!");
-		}
 
 		Contact existingContact = contactService.getContact(id);
 
