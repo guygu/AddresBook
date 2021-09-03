@@ -35,6 +35,10 @@ public class ContactController {
 
 	@GetMapping("/contacts/{id}")
 	public Contact getContact(@PathVariable("id") Long id) throws ContactNotFoundException {
+		
+		if (id == null) {
+			throw new InvalidRequestException("ID must not be null!");
+		}
 
 		return contactService.getContact(id);
 	}
