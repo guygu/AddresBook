@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -38,9 +37,23 @@ public class ContactRestControllerIntegrationTests {
 
 	@Autowired
 	private ContactDao contactDao;
+	
+	
 
 	@Test
-	@Rollback(true)
+	public void testContactNameMustNotBeBlank() throws Exception {
+
+		Contact contact = new Contact("", "0523444444");
+
+		String url = "/contacts/create";
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post(url)
+				.contentType(MediaType.APPLICATION_JSON).content(this.mapper.writeValueAsString(contact));
+
+		mockMvc.perform(mockRequest).andExpect(status().isBadRequest()).andDo(MockMvcResultHandlers.print());
+
+	}
+
+	@Test
 	public void getAllContacts() throws Exception {
 
 		String url = "/contacts";
@@ -109,6 +122,7 @@ public class ContactRestControllerIntegrationTests {
 	@Test
 	public void deleteContactById_notFound() throws Exception {
 
+		// contact Id that does not exist in the DB
 		String url = "/contacts/delete/" + 100L;
 
 		mockMvc.perform(MockMvcRequestBuilders.delete(url)).andExpect(status().isNotFound())

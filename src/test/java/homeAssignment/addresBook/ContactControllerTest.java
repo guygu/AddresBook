@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -13,22 +12,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -38,10 +31,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import homeAssignment.addresBook.controllers.ContactController;
 import homeAssignment.addresBook.entities.Contact;
 import homeAssignment.addresBook.exceptions.ContactNotFoundException;
-import homeAssignment.addresBook.exceptions.InvalidRequestException;
 import homeAssignment.addresBook.services.ContactService;
-import homeAssignment.addresBook.services.ContactServiceImpl;
-import javassist.NotFoundException;
 
 @WebMvcTest(ContactController.class)
 class ContactControllerTest {
@@ -135,25 +125,22 @@ class ContactControllerTest {
 
 		Long contactId = 2L;
 
-		Mockito.when(contactService.getContact(contactId)).thenReturn(RECORD_2);
 		Mockito.doNothing().when(contactService).delete(contactId);
 
 		String url = "/contacts/delete/" + contactId;
-		mockMvc.perform(MockMvcRequestBuilders.delete(url))
-				.andExpect(status().isOk()).andDo(MockMvcResultHandlers.print());
+		mockMvc.perform(MockMvcRequestBuilders.delete(url)).andExpect(status().isOk())
+				.andDo(MockMvcResultHandlers.print());
 
 		Mockito.verify(contactService, times(1)).delete(contactId);
 
 	}
-	
-	
+
 	@Test
 	public void deleteContactById_notFound() throws Exception {
-		
+
 		Long contactId = 2L;
 
-		Mockito.when(contactService.getContact(contactId)).thenReturn(null);
-		Mockito.doNothing().when(contactService).delete(contactId);
+		Mockito.doThrow(new ContactNotFoundException(contactId)).when(contactService).delete(contactId);
 
 		String url = "/contacts/delete/" + contactId;
 
@@ -162,8 +149,7 @@ class ContactControllerTest {
 				.andExpect(result -> assertEquals("Contact with ID 2 does not exist.",
 						result.getResolvedException().getMessage()))
 				.andDo(MockMvcResultHandlers.print());
-		
-		
+
 		Mockito.verify(contactService, times(1)).delete(contactId);
 
 	}
